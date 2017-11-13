@@ -11,6 +11,10 @@ class Grid extends Component {
       },
       endgame,
       paused,
+      slide,
+      warp,
+      invertAdvantage,
+      showMeta,
       onGridFocus,
       onKeyDown,
       onReplay
@@ -35,6 +39,49 @@ class Grid extends Component {
   
     const interimDisplay = isFirstPlay || endgame.gameOver ? startScreen : pauseScreen;
 
+    const centerField = 300 + slide;
+    const overlapDiff = warp - 300;
+    const overlapIsPos = overlapDiff <= 0;
+    const overlapDiffAbs = +overlapDiff
+    const overlapWidth = +(overlapDiff * 2);
+
+    const overlapMarker = (
+      <Rect
+        fill={overlapIsPos ? '#a7f1a7' : '#a3dca3'}
+        height={400}
+        width={overlapWidth}
+        y={0}
+        x={centerField - overlapDiffAbs}
+      ></Rect>
+    );
+    const centerFieldMarker = (
+      <Rect
+        fill='yellow'
+        height={400}
+        width={3}
+        y={0}
+        x={centerField - 1}
+      ></Rect>
+    );
+    const leftSideMarker = (
+      <Rect
+        fill={invertAdvantage ? 'red' : 'blue'}
+        height={400}
+        width={3}
+        y={0}
+        x={0}
+      ></Rect>
+    );
+    const rightSideMarker = (
+      <Rect
+        fill={invertAdvantage ? 'blue' : 'red'}
+        height={400}
+        width={3}
+        y={0}
+        x={597}
+      ></Rect>
+    );
+
     const gameDisplay = (
       <Stage 
         width={600} 
@@ -46,17 +93,23 @@ class Grid extends Component {
             height={400}
             width={600}
           ></Rect>
+          {showMeta ? overlapMarker : null}
+          {showMeta ? centerFieldMarker : null}
+          {showMeta ? leftSideMarker : null}
+          {showMeta ? rightSideMarker : null}
           <Circle
             radius={playerA.radius}
             fill={playerA.color}
             x={playerA.position.x}
             y={playerA.position.y}
+            stroke={playerA.advantage ? 'white' : 'black'}
           />
           <Circle
             radius={playerZ.radius}
             fill={playerZ.color}
             x={playerZ.position.x}
             y={playerZ.position.y}
+            stroke={playerZ.advantage ? 'white' : 'black'}
           />
         </Layer>
       </Stage>

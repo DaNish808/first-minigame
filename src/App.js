@@ -19,6 +19,7 @@ class App extends Component {
         A: {
           name: 'A',
           team: 'left',
+          advantage: true,
           position: {
             x: 200,
             y: 200
@@ -30,6 +31,7 @@ class App extends Component {
         Z: {
           name: 'Z',
           team: 'right',
+          advantage: true,
           position: {
             x: 390,
             y: 200
@@ -51,11 +53,12 @@ class App extends Component {
     this.stepSize = 3;
     this.minRadius = 5;
     this.maxRadius = 50;
+    this.showMeta = false;
 
     // parameters
     this.warp = 300;
     this.slide = 0;
-    this.invertAdvantage = false;
+    this.invertAdvantage = true;
 
     // timeout objects
     this.t = {}
@@ -148,16 +151,18 @@ class App extends Component {
   timeStep() {
     const { player, grid: { dimensions }, endgame } = this.state;
 
-    if(Math.random() * 300 < 1) this.invertAdvantage = !this.invertAdvantage;
+    if(Math.random() * 250 < 1) this.invertAdvantage = !this.invertAdvantage;
 
     const newWarp = (Math.random() - Math.random()) * 10 + this.warp;
     if(newWarp > 100 && newWarp < 500) this.warp = newWarp;
 
-    const newSlide = (Math.random() - Math.random()) * 10 + this.slide;
-    if(newSlide > -150 && newSlide < 150) this.slide = newSlide;
+    const newSlide = (Math.random() - Math.random()) * 30 + this.slide;
+    if(newSlide > -300 && newSlide < 300) this.slide = newSlide;
 
     Object.keys(player).forEach(id => {
-      player[id].radius += buildAdvantage(player[id].team, player[id].position.x, player[id].radius, this.maxRadius, this.minRadius, this.warp, this.slide, this.invertAdvantage);
+      const radDiff = buildAdvantage(player[id].team, player[id].position.x, player[id].radius, this.maxRadius, this.minRadius, this.warp, this.slide, this.invertAdvantage);
+      player[id].radius += radDiff;
+      player[id].advantage = radDiff < 0 ? false : true;
       const maxX = dimensions.width - player[id].radius;
       const maxY = dimensions.height - player[id].radius;
 
@@ -233,6 +238,10 @@ class App extends Component {
       });
       return player;
     }
+
+    this.warp = 300;
+    this.slide = 0;
+    this.invertAdvantage = false;
     
     this.setState({ 
       endgame: outcome(playerStats),
@@ -260,6 +269,10 @@ class App extends Component {
           players={player}
           endgame={endgame}
           paused={paused}
+          slide={this.slide}
+          warp={this.warp}
+          invertAdvantage={this.invertAdvantage}
+          showMeta={this.showMeta}
           onKeyDown={this.onKeyDown}
           onGridFocus={this.onGridFocus} 
           onReplay={this.onReplay}
@@ -270,7 +283,7 @@ class App extends Component {
 }
 
 function buildAdvantage(side, x, r, maxR, minR, warp, slide, invert) {
-  x = side === (invert ? 'left' : 'right') ? 600 - x : x;
+  x = side === (invert ? 'left' : 'right') ? 600 - x + slide : x - slide;
   const diff = Math.atan((x - warp) / 100) * (-2 / 2025 * r + 53 / 810 * r + 17 / 324 ) / 10;
 
   return (
